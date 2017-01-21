@@ -12,8 +12,10 @@ public class ServerHandler extends Thread {
     private Socket socket;
     protected DataOutputStream outputFromServer;
     protected DataInputStream inputFromClient;
+    private ServerGUI serverGUI;
 
-    public ServerHandler(Socket socket) {
+    public ServerHandler(Socket socket, ServerGUI serverGUI) {
+        this.serverGUI = serverGUI;
         this.socket = socket;
     }
 
@@ -24,6 +26,7 @@ public class ServerHandler extends Thread {
 
             while (true) {
                 // InputStream has no more data => go back to the beginning, if yes => keep going
+                // TODO: this causes buffer overflow
                 if (inputFromClient.available() == 0) {
                     continue;
                 }
@@ -138,7 +141,7 @@ public class ServerHandler extends Thread {
 
                 // Refresh user in chat list
                 refreshJList();
-                ServerGUI.usersJlist.setListData(Server.userList.toArray());
+                this.serverGUI.usersJlist.setListData(Server.userList.toArray());
             }
 
         } catch (IOException e) {

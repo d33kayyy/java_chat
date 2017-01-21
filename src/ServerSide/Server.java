@@ -27,7 +27,7 @@ public class Server extends JFrame {
                 System.out.println("Client connected from: " + socket.getLocalAddress().getHostName() + "/" + socket.getPort());
 
                 // Create thread for new client
-                ServerHandler serverHandler = new ServerHandler(socket);
+                ServerHandler serverHandler = new ServerHandler(socket, serverGUI);
                 serverHandler.start();
             }
         } catch (IOException ex) {
@@ -39,7 +39,7 @@ public class Server extends JFrame {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ex) {
-            System.out.println("");
+            ex.printStackTrace();
         }
         new Server(new ServerGUI());
     }

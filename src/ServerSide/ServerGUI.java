@@ -11,7 +11,7 @@ import java.net.*;
 
 public class ServerGUI extends JFrame {
 
-    protected static JList usersJlist = new JList();
+    protected JList usersJlist = new JList();
     private JTextField input = new JTextField(30);
     private JButton send = new JButton("Send");
     private JButton sendFileButton = new JButton("Send File");
@@ -57,84 +57,21 @@ public class ServerGUI extends JFrame {
         enterChatPn = new JPanel(new BorderLayout());
         enterChatPn.setBorder(new EmptyBorder(3, 10, 6, 10));
 
-//         Set up icons
-        Icon smileIcon = new ImageIcon("src/res/img/smile.gif");
-        smile = new JButton(smileIcon);
-        smile.setActionCommand("smile");
-        setButtonLook(smile);
-        smile.addActionListener(new EmoticonListener());
+        // Set up emoticon
 
-        Icon blinkIcon = new ImageIcon("src/res/img/blink.gif");
-        blink = new JButton(blinkIcon);
-        blink.setActionCommand("blink");
-        setButtonLook(blink);
-        blink.addActionListener(new EmoticonListener());
-
-        Icon brokenIcon = new ImageIcon("src/res/img/broken.gif");
-        broken = new JButton(brokenIcon);
-        broken.setActionCommand("broken");
-        setButtonLook(broken);
-        broken.addActionListener(new EmoticonListener());
-
-        Icon coolIcon = new ImageIcon("src/res/img/cool.gif");
-        cool = new JButton(coolIcon);
-        cool.setActionCommand("cool");
-        setButtonLook(cool);
-        cool.addActionListener(new EmoticonListener());
-
-        Icon cryIcon = new ImageIcon("src/res/img/cry.gif");
-        cry = new JButton(cryIcon);
-        cry.setActionCommand("cry");
-        setButtonLook(cry);
-        cry.addActionListener(new EmoticonListener());
-
-        Icon heartIcon = new ImageIcon("src/res/img/heart.gif");
-        heart = new JButton(heartIcon);
-        heart.setActionCommand("heart");
-        setButtonLook(heart);
-        heart.addActionListener(new EmoticonListener());
-
-        Icon kissIcon = new ImageIcon("src/res/img/kiss.gif");
-        kiss = new JButton(kissIcon);
-        kiss.setActionCommand("kiss");
-        setButtonLook(kiss);
-        kiss.addActionListener(new EmoticonListener());
-
-        Icon laughIcon = new ImageIcon("src/res/img/laugh.gif");
-        laugh = new JButton(laughIcon);
-        laugh.setActionCommand("laugh");
-        setButtonLook(laugh);
-        laugh.addActionListener(new EmoticonListener());
-
-        Icon lmaoIcon = new ImageIcon("src/res/img/lmao.gif");
-        lmao = new JButton(lmaoIcon);
-        lmao.setActionCommand("lmao");
-        setButtonLook(lmao);
-        lmao.addActionListener(new EmoticonListener());
-
-        Icon sadIcon = new ImageIcon("src/res/img/sad.gif");
-        sad = new JButton(sadIcon);
-        sad.setActionCommand("sad");
-        setButtonLook(sad);
-        sad.addActionListener(new EmoticonListener());
-
-        Icon shockIcon = new ImageIcon("src/res/img/shock.gif");
-        shock = new JButton(shockIcon);
-        shock.setActionCommand("shock");
-        setButtonLook(shock);
-        shock.addActionListener(new EmoticonListener());
-
-        Icon shyIcon = new ImageIcon("src/res/img/shy.gif");
-        shy = new JButton(shyIcon);
-        shy.setActionCommand("shy");
-        setButtonLook(shy);
-        shy.addActionListener(new EmoticonListener());
-
-        Icon teethIcon = new ImageIcon("src/res/img/teeth.gif");
-        teeth = new JButton(teethIcon);
-        teeth.setActionCommand("teeth");
-        teeth.addActionListener(new EmoticonListener());
-        setButtonLook(teeth);
+        blink = createEmoticon("blink");
+        broken = createEmoticon("broken");
+        cool = createEmoticon("cool");
+        cry = createEmoticon("cry");
+        heart = createEmoticon("heart");
+        kiss = createEmoticon("kiss");
+        laugh = createEmoticon("laugh");
+        lmao = createEmoticon("lmao");
+        sad = createEmoticon("sad");
+        shock = createEmoticon("shock");
+        shy = createEmoticon("shy");
+        smile = createEmoticon("smile");
+        teeth = createEmoticon("teeth");
 
         FlowLayout flowLayout = new FlowLayout();
         flowLayout.setHgap(10);
@@ -149,10 +86,10 @@ public class ServerGUI extends JFrame {
         emoticonPn.add(laugh);
         emoticonPn.add(lmao);
         emoticonPn.add(sad);
-        emoticonPn.add(teeth);
         emoticonPn.add(shock);
         emoticonPn.add(shy);
         emoticonPn.add(smile);
+        emoticonPn.add(teeth);
 
         enterChatPn.add(emoticonPn, BorderLayout.NORTH);
         enterChatPn.add(input, BorderLayout.CENTER);
@@ -171,7 +108,7 @@ public class ServerGUI extends JFrame {
         systemLog.setPreferredSize(new Dimension(300, 200));
         systemLog.setLineWrap(true);
         systemLog.setWrapStyleWord(true);
-        systemLog.setFont(new Font("Times New Roman", Font.PLAIN, 14));
+        systemLog.setFont(new Font("Roboto", Font.PLAIN, 14));
 
         JPanel rightPn = new JPanel(new BorderLayout());
         rightPn.add(log, BorderLayout.NORTH);
@@ -366,11 +303,21 @@ public class ServerGUI extends JFrame {
         }
     }
 
+    private JButton createEmoticon(String emoName) {
+        Icon brokenIcon = new ImageIcon("src/res/img/" + emoName + ".gif");
+        JButton button = new JButton(brokenIcon);
+        button.setActionCommand(emoName);
+        button.setBorder(BorderFactory.createEmptyBorder());
+        button.setContentAreaFilled(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.addActionListener(new EmoticonListener());
+        return button;
+    }
+
     public static void insertEmoticon(String user, String str) {
         Style labelStyle = showChat.getStyle(StyleContext.DEFAULT_STYLE);
 
-        String image = str + ".gif";
-        Icon icon = new ImageIcon(image);
+        Icon icon = new ImageIcon("src/res/img/" + str + ".gif");
         JLabel label = new JLabel(icon);
         StyleConstants.setComponent(labelStyle, label);
 
@@ -381,12 +328,6 @@ public class ServerGUI extends JFrame {
         } catch (BadLocationException ex) {
             ex.printStackTrace();
         }
-    }
-
-    public void setButtonLook(JButton button) {
-        button.setBorder(BorderFactory.createEmptyBorder());
-        button.setContentAreaFilled(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
     // Find specific user and send

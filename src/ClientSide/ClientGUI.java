@@ -87,7 +87,7 @@ public class ClientGUI extends JFrame {
 
         JTextPane textPane = new JTextPane(document);
         textPane.setEditable(false);
-        textPane.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        textPane.setFont(new Font("Roboto", Font.PLAIN, 14));
 
         DefaultCaret caret = (DefaultCaret) textPane.getCaret(); // The scroll move automatically to the last line
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
@@ -106,83 +106,19 @@ public class ClientGUI extends JFrame {
         enterChatPn.setBorder(new EmptyBorder(3, 10, 6, 10));
 
         // Set up icons
-        Icon smileIcon = new ImageIcon("src/res/img/smile.gif");
-        smile = new JButton(smileIcon);
-        setButtonLook(smile);
-        smile.setActionCommand("smile");
-        smile.addActionListener(new EmoticonListener());
-
-        Icon blinkIcon = new ImageIcon("src/res/img/blink.gif");
-        blink = new JButton(blinkIcon);
-        setButtonLook(blink);
-        blink.setActionCommand("blink");
-        blink.addActionListener(new EmoticonListener());
-
-        Icon brokenIcon = new ImageIcon("src/res/img/broken.gif");
-        broken = new JButton(brokenIcon);
-        setButtonLook(broken);
-        broken.setActionCommand("broken");
-        broken.addActionListener(new EmoticonListener());
-
-        Icon coolIcon = new ImageIcon("src/res/img/cool.gif");
-        cool = new JButton(coolIcon);
-        setButtonLook(cool);
-        cool.setActionCommand("cool");
-        cool.addActionListener(new EmoticonListener());
-
-        Icon cryIcon = new ImageIcon("src/res/img/cry.gif");
-        cry = new JButton(cryIcon);
-        setButtonLook(cry);
-        cry.setActionCommand("cry");
-        cry.addActionListener(new EmoticonListener());
-
-        Icon heartIcon = new ImageIcon("src/res/img/heart.gif");
-        heart = new JButton(heartIcon);
-        setButtonLook(heart);
-        heart.setActionCommand("heart");
-        heart.addActionListener(new EmoticonListener());
-
-        Icon kissIcon = new ImageIcon("src/res/img/kiss.gif");
-        kiss = new JButton(kissIcon);
-        setButtonLook(kiss);
-        kiss.setActionCommand("kiss");
-        kiss.addActionListener(new EmoticonListener());
-
-        Icon laughIcon = new ImageIcon("src/res/img/laugh.gif");
-        laugh = new JButton(laughIcon);
-        setButtonLook(laugh);
-        laugh.setActionCommand("laugh");
-        laugh.addActionListener(new EmoticonListener());
-
-        Icon lmaoIcon = new ImageIcon("src/res/img/lmao.gif");
-        lmao = new JButton(lmaoIcon);
-        setButtonLook(lmao);
-        lmao.setActionCommand("lmao");
-        lmao.addActionListener(new EmoticonListener());
-
-        Icon sadIcon = new ImageIcon("src/res/img/sad.gif");
-        sad = new JButton(sadIcon);
-        setButtonLook(sad);
-        sad.setActionCommand("sad");
-        sad.addActionListener(new EmoticonListener());
-
-        Icon shockIcon = new ImageIcon("src/res/img/shock.gif");
-        shock = new JButton(shockIcon);
-        setButtonLook(shock);
-        shock.setActionCommand("shock");
-        shock.addActionListener(new EmoticonListener());
-
-        Icon shyIcon = new ImageIcon("src/res/img/shy.gif");
-        shy = new JButton(shyIcon);
-        setButtonLook(shy);
-        shy.setActionCommand("shy");
-        shy.addActionListener(new EmoticonListener());
-
-        Icon teethIcon = new ImageIcon("src/res/img/teeth.gif");
-        teeth = new JButton(teethIcon);
-        setButtonLook(teeth);
-        teeth.setActionCommand("teeth");
-        teeth.addActionListener(new EmoticonListener());
+        smile = createEmoticon("smile");
+        blink = createEmoticon("blink");
+        broken = createEmoticon("broken");
+        cool = createEmoticon("cool");
+        cry = createEmoticon("cry");
+        heart = createEmoticon("heart");
+        kiss = createEmoticon("kiss");
+        laugh = createEmoticon("laugh");
+        lmao = createEmoticon("lmao");
+        sad = createEmoticon("sad");
+        shock = createEmoticon("shock");
+        shy = createEmoticon("shy");
+        teeth = createEmoticon("teeth");
 
         FlowLayout flowLayout = new FlowLayout();
         flowLayout.setHgap(10);
@@ -455,6 +391,7 @@ public class ClientGUI extends JFrame {
 
     private class SendMessage implements ActionListener {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             String textInput = input.getText();
             String message = "";
@@ -731,12 +668,15 @@ public class ClientGUI extends JFrame {
         logInOut.setActionCommand(logout);
     }
 
-    // Set button
-    public void setButtonLook(JButton button) {
+    private JButton createEmoticon(String emoName) {
+        Icon brokenIcon = new ImageIcon("src/res/img/" + emoName + ".gif");
+        JButton button = new JButton(brokenIcon);
+        button.setActionCommand(emoName);
         button.setBorder(BorderFactory.createEmptyBorder());
         button.setContentAreaFilled(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setEnabled(false);
+        button.addActionListener(new EmoticonListener());
+        return button;
     }
 
     // Connect to server
@@ -763,8 +703,7 @@ public class ClientGUI extends JFrame {
     public static void insertEmoticon(String userSend, String str) {
         Style labelStyle = document.getStyle(StyleContext.DEFAULT_STYLE);
 
-        String image = str + ".gif";
-        Icon icon = new ImageIcon(image);
+        Icon icon = new ImageIcon("src/res/img/" + str + ".gif");
         JLabel label = new JLabel(icon);
         StyleConstants.setComponent(labelStyle, label);
 

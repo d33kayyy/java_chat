@@ -6,7 +6,6 @@ import Utilities.SendFile;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
@@ -14,11 +13,12 @@ import java.net.Socket;
 public class ClientHandler extends Thread {
 
     private Socket socket;
-    protected DataInputStream inputFromServer;
-    protected DataOutputStream outputToServer;
+    private DataInputStream inputFromServer;
+    private ClientGUI gui;
 
-    public ClientHandler(Socket socket) {
+    public ClientHandler(Socket socket, ClientGUI gui) {
         this.socket = socket;
+        this.gui = gui;
     }
 
     public void run() {
@@ -26,7 +26,6 @@ public class ClientHandler extends Thread {
         try {
             // Create data input and output streams
             inputFromServer = new DataInputStream(socket.getInputStream());
-            outputToServer = new DataOutputStream(socket.getOutputStream());
 
             while (keep) {
                 String message = inputFromServer.readUTF();
@@ -38,7 +37,7 @@ public class ClientHandler extends Thread {
                     String temp2 = temp.replace("]", "");
                     String userlist[] = temp2.split(", ");
 
-                    ClientGUI.usersJlist.setListData(userlist);
+                    gui.usersJlist.setListData(userlist);
 
                 } else if (splitMsg[0].equals("requestSave")) {
                     // Receive file request
@@ -74,13 +73,13 @@ public class ClientHandler extends Thread {
                     String blocker = splitMsg[1];
                     if (splitMsg.length == 4) {
 
-                        if (!ClientGUI.blockList.contains(blocker)) {
+                        if (!gui.blockList.contains(blocker)) {
                             appendChat("<Private message to " + splitMsg[3] + "> ");
-                            ClientGUI.insertEmoticon(splitMsg[1], splitMsg[2]);
+                            gui.insertEmoticon(splitMsg[1], splitMsg[2]);
                         }
                     } else {
-                        if (!ClientGUI.blockList.contains(blocker)) {
-                            ClientGUI.insertEmoticon(splitMsg[1], splitMsg[2]);
+                        if (!gui.blockList.contains(blocker)) {
+                            gui.insertEmoticon(splitMsg[1], splitMsg[2]);
                         }
                     }
 
@@ -113,7 +112,7 @@ public class ClientHandler extends Thread {
                     } else {
                         blocker = messageHead;
                     }
-                    if (!ClientGUI.blockList.contains(blocker)) {
+                    if (!gui.blockList.contains(blocker)) {
                         appendChat(message);
                     }
                 }
@@ -123,15 +122,26 @@ public class ClientHandler extends Thread {
                 }
             }
         } catch (IOException ex) {
+            ex.printStackTrace();
             appendChat("Connection to server lost \n");
         }
     }
 
     public void appendChat(String str) {
         try {
-            ClientGUI.document.insertString(ClientGUI.document.getLength(), str, null);
+            gui.document.insertString(gui.document.getLength(), str, null);
         } catch (BadLocationException e) {
             e.printStackTrace();
+        }
+    }
+
+    protected void close() {
+        try {
+            // Close input stream and socket
+            if (inputFromServer != null) inputFromServer.close();
+            if (socket != null) socket.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
         }
     }
 }

@@ -40,7 +40,7 @@ public class ReceiveFile implements Runnable {
             fos.close();
             outputStream.close();
 
-            ClientGUI.appendChat("File received \n");
+//            ClientGUI.appendChat("File received \n");
         } catch (IOException ex) {
             System.out.println("Cannot receive file");
         }

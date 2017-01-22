@@ -10,30 +10,40 @@ import java.util.ArrayList;
 public class ServerHandler extends Thread {
 
     private Socket socket;
-    protected DataOutputStream outputFromServer;
-    protected DataInputStream inputFromClient;
-    private ServerGUI serverGUI;
+    private DataInputStream inputFromClient;
+    private Server server;
 
-    public ServerHandler(Socket socket, ServerGUI serverGUI) {
-        this.serverGUI = serverGUI;
+    public ServerHandler(Socket socket, Server server) {
+        this.server = server;
         this.socket = socket;
     }
 
     public void run() {
         try {
             inputFromClient = new DataInputStream(socket.getInputStream());
-            outputFromServer = new DataOutputStream(socket.getOutputStream());
 
             while (true) {
                 // InputStream has no more data => go back to the beginning, if yes => keep going
                 // TODO: this causes buffer overflow
-                if (inputFromClient.available() == 0) {
-                    continue;
-                }
+//                if (inputFromClient.available() == 0) {
+//                    continue;
+//                }
 
                 // Get message from InputStream
                 // message = type!:sender!:content!:receiver
-                String message = inputFromClient.readUTF();
+                String message = "";
+
+                try {
+                    message = inputFromClient.readUTF();
+                } catch (EOFException ex) {
+                    try {
+                        inputFromClient.close();
+                        this.stop();
+                        break;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 String splitMsg[] = message.split("!:");
 
                 switch (splitMsg[0]) {
@@ -46,11 +56,11 @@ public class ServerHandler extends Thread {
                                 ArrayList<Integer> positionList = new ArrayList<Integer>();
                                 ArrayList<Socket> tempSocketList = new ArrayList<Socket>();
                                 for (int i = 0; i < receiverList.length; i++) {
-                                    int position = Server.userList.indexOf(receiverList[i]);
+                                    int position = server.userList.indexOf(receiverList[i]);
                                     positionList.add(position);
                                 }
                                 for (int i = 0; i < positionList.size(); i++) {
-                                    Socket tempSocket = Server.socketArray.get(positionList.get(i));
+                                    Socket tempSocket = server.socketArray.get(positionList.get(i));
                                     tempSocketList.add(tempSocket);
                                 }
                                 for (int i = 0; i < tempSocketList.size(); i++) {
@@ -65,29 +75,29 @@ public class ServerHandler extends Thread {
                         } else {
                             // Send message received to all clients
                             sendToAll(splitMsg[1] + " : " + splitMsg[2] + "\n");
-                            serverDisplayChat(splitMsg[1] + " : " + splitMsg[2] + "\n");
+//                            serverDisplayChat(splitMsg[1] + " : " + splitMsg[2] + "\n");
                         }
 
                         break;
                     case "login":
                         // Add new user to userList
-                        Server.userList.add(splitMsg[1]);
+                        server.userList.add(splitMsg[1]);
                         sendToAll(splitMsg[1] + " connected to chat" + "\n");
-                        ServerGUI.systemLog.append(splitMsg[1] + " connected" + "\n");
+//                        ServerGUI.systemLog.append(splitMsg[1] + " connected" + "\n");
 
                         break;
                     case "logout":
                         // Remove user from userList
                         int position = 0;
-                        for (int i = 0; i < Server.userList.size(); i++) {
-                            if (Server.userList.get(i).contains(splitMsg[1])) {
+                        for (int i = 0; i < server.userList.size(); i++) {
+                            if (server.userList.get(i).contains(splitMsg[1])) {
                                 position = i;
                             }
                         }
-                        ServerGUI.systemLog.append(splitMsg[1] + " disconnected" + "\n");
-                        Server.socketArray.remove(position);
+//                        ServerGUI.systemLog.append(splitMsg[1] + " disconnected" + "\n");
+                        server.socketArray.remove(position);
                         sendToAll(splitMsg[1] + " disconnected from chat" + "\n");
-                        Server.userList.remove(position);
+                        server.userList.remove(position);
 
                         break;
                     case "requestSave":
@@ -126,14 +136,14 @@ public class ServerHandler extends Thread {
                         } else {
                             // Send message received to all clients
                             sendToAll(message);
-                            ServerGUI.insertEmoticon(splitMsg[1], splitMsg[2]);
+//                            ServerGUI.insertEmoticon(splitMsg[1], splitMsg[2]);
                         }
 
                         break;
                     case "changeStatus":
-                        for (int i = 0; i < Server.userList.size(); i++) {
-                            if (Server.userList.get(i).contains(splitMsg[1])) {
-                                Server.userList.set(i, splitMsg[1] + " - " + splitMsg[2]);
+                        for (int i = 0; i < server.userList.size(); i++) {
+                            if (server.userList.get(i).contains(splitMsg[1])) {
+                                server.userList.set(i, splitMsg[1] + " - " + splitMsg[2]);
                             }
                         }
                         break;
@@ -141,7 +151,7 @@ public class ServerHandler extends Thread {
 
                 // Refresh user in chat list
                 refreshJList();
-                this.serverGUI.usersJlist.setListData(Server.userList.toArray());
+//                this.serverGUI.usersJlist.setListData(server.userList.toArray());
             }
 
         } catch (IOException e) {
@@ -156,28 +166,28 @@ public class ServerHandler extends Thread {
     }
 
     // Refresh the "People in chat" in client's GUI
-    public void refreshJList() throws IOException {
-        for (int i = 0; i < Server.socketArray.size(); i++) {
-            Socket tempSocket = Server.socketArray.get(i);
+    private void refreshJList() throws IOException {
+        for (int i = 0; i < server.socketArray.size(); i++) {
+            Socket tempSocket = server.socketArray.get(i);
             DataOutputStream outputFromServer = new DataOutputStream(tempSocket.getOutputStream());
-            outputFromServer.writeUTF("refresh" + "!:" + Server.userList);
+            outputFromServer.writeUTF("refresh" + "!:" + server.userList);
             outputFromServer.flush();
         }
     }
 
-    public static void sendToAll(String str) throws IOException {
-        for (int i = 0; i < Server.socketArray.size(); i++) {
-            Socket tempSocket = Server.socketArray.get(i);
+    private void sendToAll(String str) throws IOException {
+        for (int i = 0; i < server.socketArray.size(); i++) {
+            Socket tempSocket = server.socketArray.get(i);
             DataOutputStream outputFromServer = new DataOutputStream(tempSocket.getOutputStream());
             outputFromServer.writeUTF(str);
             outputFromServer.flush();
         }
     }
 
-    public void sendOneUser(String user, String msg) throws IOException {
+    private void sendOneUser(String user, String msg) throws IOException {
         // Find specific user
-        int position = Server.userList.indexOf(user);
-        Socket tempSocket = Server.socketArray.get(position);
+        int position = server.userList.indexOf(user);
+        Socket tempSocket = server.socketArray.get(position);
 
         // Send message
         DataOutputStream outputToClient = new DataOutputStream(tempSocket.getOutputStream());
@@ -185,11 +195,11 @@ public class ServerHandler extends Thread {
         outputToClient.flush();
     }
 
-    public void serverDisplayChat(String str) {
-        try {
-            ServerGUI.showChat.insertString(ServerGUI.showChat.getLength(), str, null);
-        } catch (BadLocationException ex) {
-            ex.printStackTrace();
-        }
-    }
+//    public void serverDisplayChat(String str) {
+//        try {
+//            ServerGUI.showChat.insertString(ServerGUI.showChat.getLength(), str, null);
+//        } catch (BadLocationException ex) {
+//            ex.printStackTrace();
+//        }
+//    }
 }

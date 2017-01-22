@@ -37,11 +37,11 @@ public class SendFile extends Thread {
             }
             outStream.flush();
 
-            try {
-                ClientGUI.document.insertString(ClientGUI.document.getLength(), "File " + file.getName() + " is sent \n", null);
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-            }
+//            try {
+////                ClientGUI.document.insertString(ClientGUI.document.getLength(), "File " + file.getName() + " is sent \n", null);
+//            } catch (BadLocationException e) {
+//                e.printStackTrace();
+//            }
 
             // Close I/O
             inputFile.close();

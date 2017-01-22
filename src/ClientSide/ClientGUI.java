@@ -13,7 +13,7 @@ import java.util.List;
 public class ClientGUI extends JFrame {
     /* UI components */
 
-    protected static JList usersJlist = new JList();
+    protected JList usersJlist = new JList();
     private JTextField input = new JTextField(30);
     private JButton send = new JButton("Send");
     private JButton logInOut = new JButton("Login");
@@ -26,25 +26,24 @@ public class ClientGUI extends JFrame {
     private JLabel people = new JLabel("People in chat", SwingConstants.CENTER);
     private JPanel enterChatPn, showChatPn, leftPn, rightPn, centerPn, buttons;
     private JLabel address = new JLabel(" Address:");
-    protected JTextField insertAdd = new JTextField(8);
+    private JTextField insertAdd = new JTextField(8);
     private JLabel port = new JLabel(" Port:");
-    protected JTextField insertPort = new JTextField(8);
+    private JTextField insertPort = new JTextField(8);
     private JLabel user = new JLabel(" Logged in as:");
-    protected JTextField showUserName = new JTextField(8);
+    private JTextField showUserName = new JTextField(8);
     private JComboBox status;
     private JTextField username = new JTextField();
     private JPasswordField password = new JPasswordField();
     private JLabel statusLb = new JLabel("Status:");
     private JButton smile, blink, broken, cool, cry, heart, kiss, laugh, lmao, sad, shock, shy, teeth;
-    public static DefaultStyledDocument document = new DefaultStyledDocument();
+    protected DefaultStyledDocument document = new DefaultStyledDocument();
 
     /* Connection components */
     private Socket socket = null;
     private DataOutputStream outputToServer;
-    private DataInputStream inputFromServer;
-    private Thread threadChat;
+    private ClientHandler threadChat;
     private String path;
-    protected static List<String> blockList = new ArrayList<String>();
+    protected List<String> blockList = new ArrayList<String>();
 
     /* Constructor */
     public ClientGUI() {
@@ -300,19 +299,15 @@ public class ClientGUI extends JFrame {
                     outputToServer.writeUTF(message);
                     outputToServer.flush();
                 } catch (IOException e1) {
+                    e1.printStackTrace();
                     System.out.println("Log out error. Please close the program and start again");
                 }
                 showUserName.setText("");
                 setUI(false, "Login");
                 sendFileButton.setEnabled(false);
 
-                if (socket.isConnected()) {
-                    try {
-                        socket.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
+                close();
+
                 appendChat("You have disconnected from server \n");
             }
         }
@@ -500,22 +495,23 @@ public class ClientGUI extends JFrame {
             // Close the socket and delete user from usersJList
             String message = "logout" + "!:" + username.getText();
             try {
-                if (!socket.isClosed()) {
+                if (socket != null && !socket.isClosed()) {
                     if (socket.isConnected()) {
                         // send message to server
                         outputToServer.writeUTF(message);
                         outputToServer.flush();
+                        outputToServer.close();
                         socket.close();
                     } else {
                         System.exit(0);
                     }
                 }
             } catch (Exception ex) {
+                ex.printStackTrace();
                 System.out.println("Closed");
             } finally {
                 System.exit(0);
             }
-
         }
 
         @Override
@@ -640,7 +636,7 @@ public class ClientGUI extends JFrame {
 
     /* Methods */
     // Set UI when login/logout
-    public void setUI(boolean isLogin, String logout) {
+    private void setUI(boolean isLogin, String logout) {
         selectFileButton.setEnabled(isLogin);
         send.setEnabled(isLogin);
         input.setEnabled(isLogin);
@@ -680,27 +676,28 @@ public class ClientGUI extends JFrame {
     }
 
     // Connect to server
-    public boolean connect() {
+    private boolean connect() {
         try {
             socket = new Socket(insertAdd.getText().trim(), Integer.parseInt(insertPort.getText().trim()));
             appendChat("Connected to server" + "\n");
 
             // Create I/O streams
-            inputFromServer = new DataInputStream(socket.getInputStream());
             outputToServer = new DataOutputStream(socket.getOutputStream());
 
-            threadChat = new ClientHandler(socket);
+            // start chat thread
+            threadChat = new ClientHandler(socket, this);
             threadChat.start();
+
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             appendChat("Cannot connect to server" + "\n");
             return false;
         }
-
     }
 
     // Insert Emoticon
-    public static void insertEmoticon(String userSend, String str) {
+    protected void insertEmoticon(String userSend, String str) {
         Style labelStyle = document.getStyle(StyleContext.DEFAULT_STYLE);
 
         Icon icon = new ImageIcon("src/res/img/" + str + ".gif");
@@ -717,7 +714,7 @@ public class ClientGUI extends JFrame {
     }
 
     // Add message to chat
-    public static void appendChat(String str) {
+    private void appendChat(String str) {
         try {
             document.insertString(document.getLength(), str, null);
         } catch (BadLocationException e) {
@@ -725,13 +722,17 @@ public class ClientGUI extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
+    // Close session
+    private void close() {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
-            System.out.println("");
+            // Close stream input
+            if (outputToServer != null) outputToServer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        new ClientGUI();
-    }
 
+        // Close thread and output stream
+        threadChat.close();
+        threadChat.stop();
+    }
 }

@@ -298,6 +298,7 @@ public class ClientGUI extends JFrame {
                     // send message to server
                     outputToServer.writeUTF(message);
                     outputToServer.flush();
+                    close();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                     System.out.println("Log out error. Please close the program and start again");
@@ -305,8 +306,6 @@ public class ClientGUI extends JFrame {
                 showUserName.setText("");
                 setUI(false, "Login");
                 sendFileButton.setEnabled(false);
-
-                close();
 
                 appendChat("You have disconnected from server \n");
             }
@@ -500,8 +499,7 @@ public class ClientGUI extends JFrame {
                         // send message to server
                         outputToServer.writeUTF(message);
                         outputToServer.flush();
-                        outputToServer.close();
-                        socket.close();
+                        close();
                     } else {
                         System.exit(0);
                     }

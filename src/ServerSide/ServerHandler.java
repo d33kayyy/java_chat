@@ -98,6 +98,7 @@ public class ServerHandler extends Thread {
                         server.socketArray.remove(position);
                         sendToAll(splitMsg[1] + " disconnected from chat" + "\n");
                         server.userList.remove(position);
+                        System.out.println("Client disconnected from: " + socket.getLocalAddress().getHostName() + "/" + socket.getPort());
 
                         break;
                     case "requestSave":

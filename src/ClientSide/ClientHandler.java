@@ -27,7 +27,10 @@ public class ClientHandler extends Thread {
             // Create data input and output streams
             inputFromServer = new DataInputStream(socket.getInputStream());
 
-            while (keep) {
+            while (true) {
+                if (!socket.isConnected() || socket.isClosed()) {
+                    break;
+                }
                 String message = inputFromServer.readUTF();
                 String splitMsg[] = message.split("!:");
 
@@ -117,9 +120,7 @@ public class ClientHandler extends Thread {
                     }
                 }
 
-                if (!socket.isConnected() || socket.isClosed()) {
-                    keep = false;
-                }
+
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -139,7 +140,7 @@ public class ClientHandler extends Thread {
         try {
             // Close input stream and socket
             if (inputFromServer != null) inputFromServer.close();
-            if (socket != null) socket.close();
+            if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }

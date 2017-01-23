@@ -40,7 +40,7 @@ public class ClientHandler extends Thread {
                     String temp2 = temp.replace("]", "");
                     String userlist[] = temp2.split(", ");
 
-                    gui.usersJlist.setListData(userlist);
+                    gui.getUsersJlist().setListData(userlist);
 
                 } else if (splitMsg[0].equals("requestSave")) {
                     // Receive file request
@@ -76,12 +76,12 @@ public class ClientHandler extends Thread {
                     String blocker = splitMsg[1];
                     if (splitMsg.length == 4) {
 
-                        if (!gui.blockList.contains(blocker)) {
+                        if (!gui.getBlockList().contains(blocker)) {
                             appendChat("<Private message to " + splitMsg[3] + "> ");
                             gui.insertEmoticon(splitMsg[1], splitMsg[2]);
                         }
                     } else {
-                        if (!gui.blockList.contains(blocker)) {
+                        if (!gui.getBlockList().contains(blocker)) {
                             gui.insertEmoticon(splitMsg[1], splitMsg[2]);
                         }
                     }
@@ -115,7 +115,7 @@ public class ClientHandler extends Thread {
                     } else {
                         blocker = messageHead;
                     }
-                    if (!gui.blockList.contains(blocker)) {
+                    if (!gui.getBlockList().contains(blocker)) {
                         appendChat(message);
                     }
                 }
@@ -130,7 +130,7 @@ public class ClientHandler extends Thread {
 
     public void appendChat(String str) {
         try {
-            gui.document.insertString(gui.document.getLength(), str, null);
+            gui.getDocument().insertString(gui.getDocument().getLength(), str, null);
         } catch (BadLocationException e) {
             e.printStackTrace();
         }

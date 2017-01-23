@@ -13,7 +13,7 @@ import java.util.List;
 public class ClientGUI extends JFrame {
     /* UI components */
 
-    protected JList usersJlist = new JList();
+    private JList usersJlist = new JList();
     private JTextField input = new JTextField(30);
     private JButton send = new JButton("Send");
     private JButton logInOut = new JButton("Login");
@@ -36,14 +36,14 @@ public class ClientGUI extends JFrame {
     private JPasswordField password = new JPasswordField();
     private JLabel statusLb = new JLabel("Status:");
     private JButton smile, blink, broken, cool, cry, heart, kiss, laugh, lmao, sad, shock, shy, teeth;
-    protected DefaultStyledDocument document = new DefaultStyledDocument();
+    private DefaultStyledDocument document = new DefaultStyledDocument();
 
     /* Connection components */
     private Socket socket = null;
     private DataOutputStream outputToServer;
     private ClientHandler threadChat;
     private String path;
-    protected List<String> blockList = new ArrayList<String>();
+    private List<String> blockList = new ArrayList<String>();
 
     /* Constructor */
     public ClientGUI() {
@@ -221,10 +221,23 @@ public class ClientGUI extends JFrame {
         public void actionPerformed(ActionEvent e) {
             String action = e.getActionCommand();
             boolean validatePort = true;
+            int port;
 
             if (insertAdd.getText().trim().equals("") || insertPort.getText().trim().equals("")) {
                 JOptionPane.showMessageDialog(null, "Please enter Host address and Port number", "Invalid host", JOptionPane.OK_OPTION);
                 validatePort = false;
+            } else {
+                try {
+                    port = Integer.parseInt(insertPort.getText().trim());
+
+                    if (port < 0) {
+                        JOptionPane.showMessageDialog(null, "Invalid port number. Must be a positive integer", "Invalid port", JOptionPane.OK_OPTION);
+                        validatePort = false;
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Invalid port number. Must be an integer", "Invalid host", JOptionPane.OK_OPTION);
+                    validatePort = false;
+                }
             }
 
             if (action.equals("Login") && validatePort) {
@@ -732,5 +745,18 @@ public class ClientGUI extends JFrame {
         // Close thread and output stream
         threadChat.close();
         threadChat.stop();
+    }
+
+    /* Accessors */
+    public JList getUsersJlist() {
+        return usersJlist;
+    }
+
+    public DefaultStyledDocument getDocument() {
+        return document;
+    }
+
+    public List<String> getBlockList() {
+        return blockList;
     }
 }
